@@ -1,87 +1,70 @@
-
 <!DOCTYPE html>
 <html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WoW Guide Nexus - Tutoriels WoW en Français</title>
-    
-    <script>
-        // Global process shim
-        window.process = { env: { NODE_ENV: 'production' } };
-    </script>
-
-    <!-- Tailwind CSS -->
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>WoW Codex - Tutoriels</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <script>
       tailwind.config = {
         theme: {
           extend: {
-            colors: {
-              wow: {
-                gold: '#eab308',
-                blue: '#3b82f6',
-                dark: '#05070a'
-              }
-            },
             fontFamily: {
               sans: ['Inter', 'sans-serif'],
-              wow: ['Cinzel', 'serif'],
+              serif: ['Cinzel', 'serif'],
             },
+            colors: {
+              wow: {
+                dark: '#05070a',
+                panel: '#111318',
+                gold: '#f8b700',
+                goldDim: '#c49200',
+                blue: '#002654',
+                accent: '#1eff00', // Fel Greenish
+                rare: '#0070dd',
+                epic: '#a335ee',
+                legendary: '#ff8000',
+              }
+            }
           }
         }
       }
     </script>
-    
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
-    
     <style>
-        body {
-            background-color: #05070a;
-            color: #e2e8f0;
-            margin: 0;
-            overflow-x: hidden;
-        }
-        .wow-font { font-family: 'Cinzel', serif; }
-        
-        /* Animation de chargement si le JS ne démarre pas */
-        #root:empty::after {
-            content: "INITIALISATION DU NEXUS...";
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-family: 'Cinzel', serif;
-            color: #eab308;
-            letter-spacing: 0.3em;
-            font-size: 0.8rem;
-            animation: nexusPulse 2s infinite ease-in-out;
-        }
-        @keyframes nexusPulse {
-            0%, 100% { opacity: 0.3; transform: translate(-50%, -50%) scale(0.95); }
-            50% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-        }
+      body {
+        background-color: #05070a;
+        color: #e5e7eb;
+      }
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #111318;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #374151;
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #f8b700;
+      }
     </style>
-
-    <!-- Importmap FIXÉ : Suppression de la ligne conflictuelle react/ -->
-    <script type="importmap">
+  <script type="importmap">
 {
   "imports": {
-    "react": "https://esm.sh/react@19.0.0",
-    "react-dom": "https://esm.sh/react-dom@19.0.0",
-    "react-dom/client": "https://esm.sh/react-dom@19.0.0/client",
-    "@google/genai": "https://esm.sh/@google/genai@1.39.0",
+    "react": "https://esm.sh/react@^19.2.4",
     "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
-    "react/": "https://esm.sh/react@^19.2.4/"
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.39.0"
   }
 }
 </script>
 <link rel="stylesheet" href="/index.css">
 </head>
-<body>
+  <body>
     <div id="root"></div>
-    <!-- index.tsx est automatiquement importé comme module ES6 -->
-<script type="module" src="/index.tsx"></script>
+  <script type="module" src="/index.tsx"></script>
 </body>
 </html>

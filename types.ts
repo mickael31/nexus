@@ -1,32 +1,59 @@
-
-export interface VideoResult {
+export interface Video {
+  id: string;
   title: string;
   description: string;
-  thumbnail: string;
-  url: string;
-  duration: string;
-  platform: 'YouTube' | 'Twitch' | 'Dailymotion';
+  thumbnailUrl: string;
+  videoUrl: string;
+  channelName: string;
   views: string;
-  date: string;
-  tags: string[];
+  duration: string;
+  publishedDate: string;
+  tags?: string[];
 }
 
-export type ClassType = 
-  | 'Guerrier' | 'Paladin' | 'Chasseur' | 'Voleur' | 'Prêtre' 
-  | 'Chevalier de la mort' | 'Chaman' | 'Mage' | 'Démoniste' | 'Moine' 
-  | 'Druide' | 'Chasseur de démons' | 'Évocateur' | 'Tous';
-
-export type ExpansionType = 
-  | 'The War Within' | 'Dragonflight' | 'Shadowlands' 
-  | 'Classic' | 'WotLK' | 'Hardcore' | 'Toutes';
-
-export type ContentType = 
-  | 'PVE' | 'PVP' | 'Leveling' | 'Farming PO' | 'Métiers' | 'Addons' | 'Tous';
-
-export interface SearchFilters {
+export interface FilterState {
   query: string;
-  wowClass: ClassType;
-  expansion: ExpansionType;
-  content: ContentType;
-  sortBy: 'date' | 'views' | 'popularity' | 'relevance';
+  class: string;
+  expansion: string;
+  contentType: string;
+  sortBy: 'relevance' | 'date' | 'views';
+}
+
+export enum WowClass {
+  None = "",
+  Warrior = "Guerrier",
+  Paladin = "Paladin",
+  Hunter = "Chasseur",
+  Rogue = "Voleur",
+  Priest = "Prêtre",
+  DeathKnight = "Chevalier de la mort",
+  Shaman = "Chaman",
+  Mage = "Mage",
+  Warlock = "Démoniste",
+  Monk = "Moine",
+  Druid = "Druide",
+  DemonHunter = "Chasseur de démons",
+  Evoker = "Évocateur"
+}
+
+export enum Expansion {
+  None = "",
+  TheWarWithin = "The War Within",
+  Dragonflight = "Dragonflight",
+  Shadowlands = "Shadowlands",
+  BFA = "Battle for Azeroth",
+  Legion = "Legion",
+  WotLK = "Wrath of the Lich King (Classic)",
+  Hardcore = "Classic Hardcore",
+  Classic = "Classic Era"
+}
+
+export enum ContentType {
+  None = "",
+  PVE = "PVE / Raid / M+",
+  PVP = "PVP / Arène",
+  Leveling = "Leveling / Speedrun",
+  Gold = "Gold Farming",
+  Lore = "Histoire / Lore",
+  Addons = "Addons & UI"
 }

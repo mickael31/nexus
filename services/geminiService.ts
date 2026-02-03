@@ -1,90 +1,117 @@
+import { GoogleGenAI } from "@google/genai";
+import { FilterState, Video } from '../types';
 
-import { GoogleGenAI, Type } from "@google/genai";
-import { SearchFilters, VideoResult } from "../types.ts";
-
-export const searchVideos = async (filters: SearchFilters): Promise<VideoResult[]> => {
-  const apiKey = process.env.API_KEY;
-  
-  if (!apiKey) {
-    throw new Error("Clé API manquante. Veuillez vérifier votre configuration.");
+const getThumbnailFromUrl = (url: string): string => {
+  if (!url) return "https://picsum.photos/640/360?blur=2";
+  const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
+  const match = url.match(regExp);
+  const id = (match && match[7].length === 11) ? match[7] : null;
+  if (id) {
+    return `https://img.youtube.com/vi/${id}/mqdefault.jpg`;
   }
-  
+  return "https://picsum.photos/640/360?blur=2"; // Fallback
+};
+
+export const searchVideos = async (filters: FilterState): Promise<Video[]> => {
+  const apiKey = process.env.API_KEY;
+
+  // Use mock data if no key is present (safe fallback for demo)
+  if (!apiKey) {
+    console.warn("No API_KEY found. Returning mock data.");
+    const { MOCK_VIDEOS } = await import('../constants'); 
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    return MOCK_VIDEOS;
+  }
+
   const ai = new GoogleGenAI({ apiKey });
-  
-  const classPart = filters.wowClass !== 'Tous' ? `classe ${filters.wowClass}` : '';
-  const expPart = filters.expansion !== 'Toutes' ? filters.expansion : 'Retail';
-  const contentPart = filters.content !== 'Tous' ? filters.content : 'guide de jeu';
-  
-  const queryContext = `World of Warcraft ${expPart} ${classPart} ${contentPart} ${filters.query}`.trim();
 
-  const prompt = `Tu es l'Archimage du Nexus, un expert de World of Warcraft.
-    Trouve les 6 meilleurs guides vidéo YouTube récents pour : "${queryContext}".
+  // Construct a natural language query based on filters
+  let queryParts = [];
+  if (filters.expansion) queryParts.push(`World of Warcraft ${filters.expansion}`);
+  else queryParts.push("World of Warcraft");
+  
+  if (filters.class) queryParts.push(`${filters.class} guide`);
+  if (filters.contentType) queryParts.push(filters.contentType);
+  if (filters.query) queryParts.push(filters.query);
+  
+  const finalQuery = queryParts.join(" ");
+  const sortByInstruction = filters.sortBy === 'date' ? "recent" : filters.sortBy === 'views' ? "most viewed" : "best matching";
+
+  const systemInstruction = `
+    You are an expert World of Warcraft assistant. Your goal is to find the best YouTube tutorials.
     
-    CRITÈRES :
-    - Langue : Français exclusivement.
-    - Type : Guides, tutoriels, explications stratégiques.
-    - Qualité : Favorise les chaînes reconnues de la communauté francophone.
-
-    RETOURNE UN JSON UNIQUEMENT sous cette forme :
-    {
-      "videos": [
-        {
-          "title": "Titre du guide",
-          "description": "Bref résumé du contenu",
-          "thumbnail": "URL de la miniature YouTube",
-          "url": "URL directe vers la vidéo",
-          "duration": "MM:SS",
-          "platform": "YouTube",
-          "views": "Nombre de vues approx",
-          "date": "Date de publication"
-        }
-      ]
-    }`;
+    1. Search for YouTube videos matching: "${finalQuery}".
+    2. Focus on "${sortByInstruction}" videos.
+    3. Return a list of 8-12 videos.
+    4. For each video, provide: title, description, videoUrl, channelName, views (estimate), duration (estimate), publishedDate.
+    5. Output the result strictly as a JSON array inside a markdown code block (e.g. \`\`\`json ... \`\`\`).
+    6. Ensure 'videoUrl' is a valid YouTube link.
+  `;
 
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: prompt,
+      model: "gemini-2.5-flash-latest",
+      contents: `Find high quality World of Warcraft tutorial videos for: "${finalQuery}".`,
       config: {
+        systemInstruction: systemInstruction,
         tools: [{ googleSearch: {} }],
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            videos: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  title: { type: Type.STRING },
-                  description: { type: Type.STRING },
-                  thumbnail: { type: Type.STRING },
-                  url: { type: Type.STRING },
-                  duration: { type: Type.STRING },
-                  platform: { type: Type.STRING },
-                  views: { type: Type.STRING },
-                  date: { type: Type.STRING },
-                },
-                required: ["title", "url"]
-              }
-            }
-          }
-        }
-      },
+        // responseMimeType and responseSchema are removed to avoid conflict with Search Grounding
+      }
     });
 
-    const text = response.text;
-    if (!text) return [];
-
-    try {
-      const data = JSON.parse(text.replace(/```json|```/g, '').trim());
-      return data.videos || [];
-    } catch (parseError) {
-      console.error("Erreur de parsing JSON:", parseError);
-      return [];
+    let jsonText = response.text || "";
+    
+    // Extract JSON from markdown code block if present
+    const jsonMatch = jsonText.match(/```json\n?([\s\S]*?)\n?```/) || jsonText.match(/```\n?([\s\S]*?)\n?```/);
+    if (jsonMatch) {
+      jsonText = jsonMatch[1];
     }
+
+    // Clean up
+    jsonText = jsonText.trim();
+
+    let rawVideos;
+    try {
+      rawVideos = JSON.parse(jsonText);
+    } catch (parseError) {
+      console.error("JSON Parse Error on text:", jsonText);
+      // Fallback: try to find array in text
+      const arrayMatch = jsonText.match(/\[[\s\S]*\]/);
+      if (arrayMatch) {
+         try {
+            rawVideos = JSON.parse(arrayMatch[0]);
+         } catch(e) {
+            throw new Error("Could not parse video data from response");
+         }
+      } else {
+         throw new Error("Invalid JSON format from model");
+      }
+    }
+    
+    if (!Array.isArray(rawVideos)) {
+      throw new Error("Response is not an array");
+    }
+
+    // Transform into our internal Video type, adding generated IDs and Thumbnails
+    const processedVideos: Video[] = rawVideos.map((v: any, index: number) => ({
+      id: `gen_${index}_${Date.now()}`,
+      title: v.title || "Titre indisponible",
+      description: v.description || "Pas de description disponible.",
+      videoUrl: v.videoUrl || "",
+      thumbnailUrl: getThumbnailFromUrl(v.videoUrl),
+      channelName: v.channelName || "Chaîne inconnue",
+      views: v.views || "N/A",
+      duration: v.duration || "N/A",
+      publishedDate: v.publishedDate || "Récent",
+      tags: [filters.class, filters.expansion].filter(Boolean) as string[]
+    }));
+
+    return processedVideos;
+
   } catch (error) {
-    console.error("Erreur Gemini:", error);
-    throw error;
+    console.error("Gemini Search Error:", error);
+    // Fallback to mock data on error for UX continuity
+    const { MOCK_VIDEOS } = await import('../constants');
+    return MOCK_VIDEOS;
   }
 };
