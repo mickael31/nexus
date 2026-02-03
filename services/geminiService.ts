@@ -1,5 +1,5 @@
-import { GoogleGenAI } from "@google/genai";
 import { FilterState, Video } from '../types';
+import { getEffectiveApiKey } from './apiKey';
 
 const getThumbnailFromUrl = (url: string): string => {
   if (!url) return "https://picsum.photos/640/360?blur=2";
@@ -13,33 +13,38 @@ const getThumbnailFromUrl = (url: string): string => {
 };
 
 export const searchVideos = async (filters: FilterState): Promise<Video[]> => {
-  const apiKey = process.env.API_KEY;
+  const apiKey = getEffectiveApiKey();
 
   // Use mock data if no key is present (safe fallback for demo)
   if (!apiKey) {
     console.warn("No API_KEY found. Returning mock data.");
-    const { MOCK_VIDEOS } = await import('../constants'); 
+    const { MOCK_VIDEOS } = await import('../constants');
     await new Promise(resolve => setTimeout(resolve, 1000));
     return MOCK_VIDEOS;
   }
 
+  // Avoid shipping the Gemini client unless it's actually needed.
+  const { GoogleGenAI } = await import("@google/genai");
   const ai = new GoogleGenAI({ apiKey });
 
   // Construct a natural language query based on filters
-  let queryParts = [];
+  const queryParts: string[] = [];
   if (filters.expansion) queryParts.push(`World of Warcraft ${filters.expansion}`);
   else queryParts.push("World of Warcraft");
-  
+
   if (filters.class) queryParts.push(`${filters.class} guide`);
   if (filters.contentType) queryParts.push(filters.contentType);
   if (filters.query) queryParts.push(filters.query);
-  
+
   const finalQuery = queryParts.join(" ");
-  const sortByInstruction = filters.sortBy === 'date' ? "recent" : filters.sortBy === 'views' ? "most viewed" : "best matching";
+  const sortByInstruction =
+    filters.sortBy === 'date' ? "recent" :
+    filters.sortBy === 'views' ? "most viewed" :
+    "best matching";
 
   const systemInstruction = `
     You are an expert World of Warcraft assistant. Your goal is to find the best YouTube tutorials.
-    
+
     1. Search for YouTube videos matching: "${finalQuery}".
     2. Focus on "${sortByInstruction}" videos.
     3. Return a list of 8-12 videos.
@@ -53,14 +58,14 @@ export const searchVideos = async (filters: FilterState): Promise<Video[]> => {
       model: "gemini-2.5-flash-latest",
       contents: `Find high quality World of Warcraft tutorial videos for: "${finalQuery}".`,
       config: {
-        systemInstruction: systemInstruction,
+        systemInstruction,
         tools: [{ googleSearch: {} }],
         // responseMimeType and responseSchema are removed to avoid conflict with Search Grounding
       }
     });
 
     let jsonText = response.text || "";
-    
+
     // Extract JSON from markdown code block if present
     const jsonMatch = jsonText.match(/```json\n?([\s\S]*?)\n?```/) || jsonText.match(/```\n?([\s\S]*?)\n?```/);
     if (jsonMatch) {
@@ -70,24 +75,17 @@ export const searchVideos = async (filters: FilterState): Promise<Video[]> => {
     // Clean up
     jsonText = jsonText.trim();
 
-    let rawVideos;
+    let rawVideos: unknown;
     try {
       rawVideos = JSON.parse(jsonText);
-    } catch (parseError) {
+    } catch {
       console.error("JSON Parse Error on text:", jsonText);
       // Fallback: try to find array in text
       const arrayMatch = jsonText.match(/\[[\s\S]*\]/);
-      if (arrayMatch) {
-         try {
-            rawVideos = JSON.parse(arrayMatch[0]);
-         } catch(e) {
-            throw new Error("Could not parse video data from response");
-         }
-      } else {
-         throw new Error("Invalid JSON format from model");
-      }
+      if (!arrayMatch) throw new Error("Invalid JSON format from model");
+      rawVideos = JSON.parse(arrayMatch[0]);
     }
-    
+
     if (!Array.isArray(rawVideos)) {
       throw new Error("Response is not an array");
     }
@@ -107,7 +105,6 @@ export const searchVideos = async (filters: FilterState): Promise<Video[]> => {
     }));
 
     return processedVideos;
-
   } catch (error) {
     console.error("Gemini Search Error:", error);
     // Fallback to mock data on error for UX continuity

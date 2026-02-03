@@ -1,5 +1,5 @@
 import React from 'react';
-import { FilterState, WowClass, Expansion, ContentType } from '../types';
+import { FilterState } from '../types';
 import { WOW_CLASSES, WOW_EXPANSIONS, CONTENT_TYPES } from '../constants';
 
 interface FilterBarProps {
@@ -22,7 +22,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ filters, onFilterChange, onSearch
   };
 
   return (
-    <div className="bg-wow-panel border-y border-gray-800 shadow-inner py-6">
+    <div id="recherche" className="bg-wow-panel border-y border-gray-800 shadow-inner py-6">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
         
         {/* Main Search Input */}
@@ -34,11 +34,13 @@ const FilterBar: React.FC<FilterBarProps> = ({ filters, onFilterChange, onSearch
             onChange={(e) => handleChange('query', e.target.value)}
             onKeyDown={handleKeyDown}
             className="w-full bg-gray-900/50 text-gray-100 border border-gray-700 rounded-lg pl-4 pr-32 py-4 focus:ring-2 focus:ring-wow-goldDim focus:border-transparent outline-none transition-all placeholder-gray-500 font-sans text-lg"
+            aria-label="Recherche"
           />
           <button
             onClick={onSearch}
             disabled={isLoading}
             className="absolute right-2 top-2 bottom-2 bg-wow-gold hover:bg-yellow-400 text-wow-dark font-bold py-2 px-6 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-wide text-sm"
+            aria-label="Lancer la recherche"
           >
             {isLoading ? '...' : 'Chercher'}
           </button>

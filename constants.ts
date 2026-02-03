@@ -8,8 +8,8 @@ export const CONTENT_TYPES = Object.values(ContentType).filter(t => t !== "");
 export const MOCK_VIDEOS: Video[] = [
   {
     id: "mock1",
-    title: "The War Within: Guide Complet du Guerrier Armes",
-    description: "Tout ce qu'il faut savoir sur le Guerrier Armes dans la nouvelle extension : talents, rotation, et équipement.",
+    title: "The War Within : guide complet du Guerrier Armes",
+    description: "Tout ce qu'il faut savoir sur le Guerrier Armes : talents, rotation et équipement.",
     thumbnailUrl: "https://picsum.photos/seed/warrior/640/360",
     videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
     channelName: "WoW Guides FR",
@@ -21,7 +21,7 @@ export const MOCK_VIDEOS: Video[] = [
   {
     id: "mock2",
     title: "Comment monter ses métiers rapidement dans Dragonflight",
-    description: "Optimisez votre temps et vos pièces d'or avec ce guide ultime des métiers.",
+    description: "Optimisez votre temps et vos pièces d'or avec ce guide des métiers.",
     thumbnailUrl: "https://picsum.photos/seed/professions/640/360",
     videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
     channelName: "GoldGoblin",
@@ -32,7 +32,7 @@ export const MOCK_VIDEOS: Video[] = [
   },
   {
     id: "mock3",
-    title: "Mage Givre PvP : Dominez l'arène",
+    title: "Mage Givre PvP : dominez l'arène",
     description: "Les meilleures compositions et stratégies pour monter en cote en 3v3.",
     thumbnailUrl: "https://picsum.photos/seed/mage/640/360",
     videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
@@ -44,8 +44,8 @@ export const MOCK_VIDEOS: Video[] = [
   },
   {
     id: "mock4",
-    title: "Le Lore expliqué : Qui est Xal'atath ?",
-    description: "Plongez dans l'histoire sombre de l'Empire Noir et de l'arme prodigieuse.",
+    title: "Le lore expliqué : qui est Xal'atath ?",
+    description: "Plongez dans l'histoire sombre de l'Empire noir et de l'arme prodigieuse.",
     thumbnailUrl: "https://picsum.photos/seed/lore/640/360",
     videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
     channelName: "NobbelLike",
