@@ -3,28 +3,43 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { SearchFilters, VideoResult } from "../types.ts";
 
 export const searchVideos = async (filters: SearchFilters): Promise<VideoResult[]> => {
-  // Récupération sécurisée de la clé API
-  const apiKey = (window as any).process?.env?.API_KEY || (typeof process !== 'undefined' ? process.env.API_KEY : '');
+  const apiKey = process.env.API_KEY;
   
   if (!apiKey) {
-    console.warn("Clé API manquante. La recherche risque d'échouer.");
+    throw new Error("Clé API manquante. Veuillez vérifier votre configuration.");
   }
   
-  const ai = new GoogleGenAI({ apiKey: apiKey });
+  const ai = new GoogleGenAI({ apiKey });
   
-  const prompt = `
-    Agis en tant qu'expert World of Warcraft (WoW). Recherche des tutoriels vidéo RÉCENTS et UNIQUEMENT EN FRANÇAIS.
+  const classPart = filters.wowClass !== 'Tous' ? `classe ${filters.wowClass}` : '';
+  const expPart = filters.expansion !== 'Toutes' ? filters.expansion : 'Retail';
+  const contentPart = filters.content !== 'Tous' ? filters.content : 'guide de jeu';
+  
+  const queryContext = `World of Warcraft ${expPart} ${classPart} ${contentPart} ${filters.query}`.trim();
+
+  const prompt = `Tu es l'Archimage du Nexus, un expert de World of Warcraft.
+    Trouve les 6 meilleurs guides vidéo YouTube récents pour : "${queryContext}".
     
-    Critères de recherche :
-    - Mot-clé : ${filters.query || 'tutoriel WoW'}
-    - Classe : ${filters.wowClass}
-    - Extension : ${filters.expansion}
-    - Type : ${filters.content}
-    
-    Utilise Google Search pour trouver les vidéos les plus populaires sur YouTube et Twitch.
-    Retourne impérativement un objet JSON avec une clé "videos" contenant :
-    title, description, thumbnail, url, duration, platform, views, date.
-  `;
+    CRITÈRES :
+    - Langue : Français exclusivement.
+    - Type : Guides, tutoriels, explications stratégiques.
+    - Qualité : Favorise les chaînes reconnues de la communauté francophone.
+
+    RETOURNE UN JSON UNIQUEMENT sous cette forme :
+    {
+      "videos": [
+        {
+          "title": "Titre du guide",
+          "description": "Bref résumé du contenu",
+          "thumbnail": "URL de la miniature YouTube",
+          "url": "URL directe vers la vidéo",
+          "duration": "MM:SS",
+          "platform": "YouTube",
+          "views": "Nombre de vues approx",
+          "date": "Date de publication"
+        }
+      ]
+    }`;
 
   try {
     const response = await ai.models.generateContent({
@@ -50,24 +65,26 @@ export const searchVideos = async (filters: SearchFilters): Promise<VideoResult[
                   views: { type: Type.STRING },
                   date: { type: Type.STRING },
                 },
-                required: ["title", "url", "platform"],
-              },
-            },
-          },
-        },
+                required: ["title", "url"]
+              }
+            }
+          }
+        }
       },
     });
 
     const text = response.text;
     if (!text) return [];
 
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    const cleanJson = jsonMatch ? jsonMatch[0] : text;
-    const data = JSON.parse(cleanJson);
-    
-    return data.videos || [];
+    try {
+      const data = JSON.parse(text.replace(/```json|```/g, '').trim());
+      return data.videos || [];
+    } catch (parseError) {
+      console.error("Erreur de parsing JSON:", parseError);
+      return [];
+    }
   } catch (error) {
-    console.error("Erreur API Gemini:", error);
-    return [];
+    console.error("Erreur Gemini:", error);
+    throw error;
   }
 };
