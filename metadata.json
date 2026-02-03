@@ -1,0 +1,5 @@
+{
+  "name": "WoW Guide Nexus",
+  "description": "A high-performance World of Warcraft tutorial aggregator powered by Gemini AI. Find the best guides for every class, expansion, and gameplay style with real-time web search capabilities.",
+  "requestFramePermissions": []
+}
