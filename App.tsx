@@ -1,9 +1,9 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { SearchFilters, VideoResult } from './types';
-import { VideoCard } from './components/VideoCard';
-import { Filters } from './components/Filters';
-import { searchVideos } from './services/geminiService';
+import { SearchFilters, VideoResult } from './types.ts';
+import { VideoCard } from './components/VideoCard.tsx';
+import { Filters } from './components/Filters.tsx';
+import { searchVideos } from './services/geminiService.ts';
 
 const LOADING_MESSAGES = [
   "Invoquer des grimoires de connaissances...",
@@ -32,7 +32,6 @@ const App: React.FC = () => {
     setIsLoading(true);
     setError(null);
     
-    // Animation des messages de chargement
     const msgInterval = setInterval(() => {
       setLoadingMsg(prev => {
         const idx = LOADING_MESSAGES.indexOf(prev);
@@ -47,6 +46,7 @@ const App: React.FC = () => {
         setError("Aucun guide trouvé. L'éclaireur n'a rien ramené des Terres de l'Ombre.");
       }
     } catch (err) {
+      console.error(err);
       setError("Une erreur de phase s'est produite. Rechargez l'instance.");
     } finally {
       clearInterval(msgInterval);
@@ -60,7 +60,6 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#06080c] text-slate-300 selection:bg-yellow-500/30 selection:text-yellow-200">
-      {/* Navbar Décorative */}
       <nav className="sticky top-0 z-[60] bg-[#0b0e14]/80 backdrop-blur-xl border-b border-white/5">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -90,7 +89,6 @@ const App: React.FC = () => {
 
       <main className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex flex-col lg:flex-row gap-10">
-          {/* Sidebar */}
           <aside className="lg:w-1/4">
             <Filters 
               filters={filters} 
@@ -100,7 +98,6 @@ const App: React.FC = () => {
             />
           </aside>
 
-          {/* Grid */}
           <section className="lg:w-3/4">
             <div className="mb-10">
               <div className="flex items-center gap-4 mb-2">
@@ -130,7 +127,7 @@ const App: React.FC = () => {
                 <button onClick={fetchResults} className="px-6 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-700 transition-colors">Réessayer</button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 animate-in slide-in-from-bottom-4 duration-700">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {videos.map((video, index) => (
                   <VideoCard key={`${video.url}-${index}`} video={video} />
                 ))}
@@ -140,9 +137,8 @@ const App: React.FC = () => {
         </div>
       </main>
 
-      {/* Footer minimaliste */}
       <footer className="mt-20 border-t border-white/5 py-12 px-4">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 opacity-50 grayscale hover:grayscale-0 transition-all">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 opacity-50 grayscale hover:grayscale-0 transition-all text-center">
           <div className="text-[10px] font-bold tracking-[0.5em] uppercase">Built with Gemini 3 Pro & React</div>
           <div className="flex gap-4 text-xs">
             <span>© {new Date().getFullYear()} WoW Guide Nexus</span>

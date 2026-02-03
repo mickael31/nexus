@@ -1,5 +1,5 @@
 
-import { ClassType, ExpansionType, ContentType } from './types';
+import { ClassType, ExpansionType, ContentType } from './types.ts';
 
 export const CLASSES: ClassType[] = [
   'Tous', 'Guerrier', 'Paladin', 'Chasseur', 'Voleur', 'Prêtre', 

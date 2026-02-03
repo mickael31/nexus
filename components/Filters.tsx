@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { SearchFilters } from '../types';
-import { CLASSES, EXPANSIONS, CONTENTS, SORT_OPTIONS } from '../constants';
+import { SearchFilters } from '../types.ts';
+import { CLASSES, EXPANSIONS, CONTENTS } from '../constants.tsx';
 
 interface FiltersProps {
   filters: SearchFilters;

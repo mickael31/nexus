@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { VideoResult } from '../types';
+import { VideoResult } from '../types.ts';
 
 interface VideoCardProps {
   video: VideoResult;
@@ -11,7 +11,6 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
   
   return (
     <div className="group relative glass-panel rounded-2xl overflow-hidden border border-slate-800 hover:border-yellow-500/40 transition-all duration-500 hover:shadow-[0_0_30px_rgba(234,179,8,0.1)] flex flex-col h-full bg-slate-900/40">
-      {/* Thumbnail Container */}
       <div className="relative aspect-video overflow-hidden">
         <img 
           src={video.thumbnail || `https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=400&h=225&auto=format&fit=crop`} 
@@ -20,12 +19,9 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
           loading="lazy"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-60"></div>
-        
-        {/* Badges contextuels */}
         <div className="absolute bottom-3 right-3 bg-black/80 backdrop-blur-md px-2 py-1 rounded-md text-[10px] font-bold text-yellow-500 border border-yellow-500/20">
           {video.duration || '--:--'}
         </div>
-        
         <div className={`absolute top-3 left-3 px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-tighter shadow-lg ${
           isYouTube ? 'bg-red-600 text-white' : 'bg-purple-600 text-white'
         }`}>
@@ -33,16 +29,13 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
         </div>
       </div>
       
-      {/* Content */}
       <div className="p-5 flex flex-col flex-grow">
         <h3 className="text-base font-bold text-slate-100 line-clamp-2 leading-snug mb-2 group-hover:text-yellow-400 transition-colors duration-300">
           {video.title}
         </h3>
-        
         <p className="text-slate-400 text-xs line-clamp-3 mb-4 leading-relaxed opacity-80">
           {video.description}
         </p>
-
         <div className="mt-auto space-y-4">
           <div className="flex items-center justify-between text-[10px] text-slate-500 font-medium">
             <span className="flex items-center gap-1">
@@ -51,7 +44,6 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video }) => {
             </span>
             <span>{video.date}</span>
           </div>
-
           <a 
             href={video.url} 
             target="_blank" 

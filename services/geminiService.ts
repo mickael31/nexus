@@ -1,8 +1,13 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
-import { SearchFilters, VideoResult } from "../types";
+import { SearchFilters, VideoResult } from "../types.ts";
 
 export const searchVideos = async (filters: SearchFilters): Promise<VideoResult[]> => {
+  // Vérification de sécurité pour éviter le crash silencieux si process.env.API_KEY est manquant
+  if (typeof process === 'undefined' || !process.env.API_KEY) {
+    console.error("Clé API manquante dans l'environnement.");
+  }
+  
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   
   const prompt = `
@@ -54,7 +59,6 @@ export const searchVideos = async (filters: SearchFilters): Promise<VideoResult[
     const text = response.text;
     if (!text) return [];
 
-    // Nettoyage de la réponse pour extraire le JSON pur
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     const cleanJson = jsonMatch ? jsonMatch[0] : text;
     const data = JSON.parse(cleanJson);
