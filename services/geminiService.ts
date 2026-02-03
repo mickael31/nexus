@@ -3,12 +3,14 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { SearchFilters, VideoResult } from "../types.ts";
 
 export const searchVideos = async (filters: SearchFilters): Promise<VideoResult[]> => {
-  // Vérification de sécurité pour éviter le crash silencieux si process.env.API_KEY est manquant
-  if (typeof process === 'undefined' || !process.env.API_KEY) {
-    console.error("Clé API manquante dans l'environnement.");
+  // Récupération sécurisée de la clé API
+  const apiKey = (window as any).process?.env?.API_KEY || (typeof process !== 'undefined' ? process.env.API_KEY : '');
+  
+  if (!apiKey) {
+    console.warn("Clé API manquante. La recherche risque d'échouer.");
   }
   
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = new GoogleGenAI({ apiKey: apiKey });
   
   const prompt = `
     Agis en tant qu'expert World of Warcraft (WoW). Recherche des tutoriels vidéo RÉCENTS et UNIQUEMENT EN FRANÇAIS.

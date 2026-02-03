@@ -5,30 +5,61 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WoW Guide Nexus - Tutoriels WoW en Français</title>
+    
+    <!-- Configuration et Diagnostic -->
+    <script>
+        window.onerror = function(msg, url, lineNo, columnNo, error) {
+            console.error('Erreur Globale:', msg, '\nURL:', url, '\nLigne:', lineNo, '\nErreur:', error);
+            return false;
+        };
+        // Shim process sécurisé pour React/CDN
+        window.process = window.process || { env: { NODE_ENV: 'production' } };
+    </script>
+
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Babel Standalone (Version stable) -->
+    <script src="https://unpkg.com/@babel/standalone@7.23.12/babel.min.js" crossorigin></script>
+
     <style>
         body {
             font-family: 'Inter', sans-serif;
             background-color: #06080c;
             color: #e2e8f0;
             margin: 0;
+            overflow-x: hidden;
         }
         .wow-font {
             font-family: 'Cinzel', serif;
-        }
-        .gradient-gold {
-            background: linear-gradient(to bottom, #fde68a, #d97706);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
         }
         .glass-panel {
             background: rgba(15, 23, 42, 0.8);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.05);
         }
+        #root:empty::after {
+            content: "CHARGEMENT DU NEXUS...";
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Cinzel', serif;
+            color: #eab308;
+            letter-spacing: 0.3em;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 1; }
+        }
     </style>
-<script type="importmap">
+
+    <!-- Importmap propre et sans doublons -->
+    <script type="importmap">
 {
   "imports": {
     "react": "https://esm.sh/react@19.0.0",
@@ -44,7 +75,27 @@
 </head>
 <body>
     <div id="root"></div>
-    <script type="module" src="./index.tsx"></script>
+    
+    <!-- 
+        Bootstrap Inline : 
+        C'est la méthode la plus fiable pour éviter l'erreur ".targets['esmodules']".
+        Babel compile ce bloc et gère l'import de App.tsx via le navigateur.
+    -->
+    <script type="text/babel" data-presets="typescript,react" data-type="module">
+        import React from 'react';
+        import { createRoot } from 'react-dom/client';
+        import App from './App.tsx';
+
+        const container = document.getElementById('root');
+        if (container) {
+            const root = createRoot(container);
+            root.render(
+                <React.StrictMode>
+                    <App />
+                </React.StrictMode>
+            );
+        }
+    </script>
 <script type="module" src="/index.tsx"></script>
 </body>
 </html>
